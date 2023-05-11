@@ -50,7 +50,7 @@ public class MassUpdateService : BackgroundService
                 { TotalHours: >= 1, Minutes: 0, Seconds: 0 } => true,
                 { TotalMinutes: < 30, Seconds: 0 } when delta.Minutes % 5 == 0 => true,
                 { TotalMinutes: < 5, Seconds: 0 } => true,
-                { TotalSeconds: <=5 and >=0 } => true,
+                { TotalSeconds: <= 5 and >= 0 } => true,
                 { TotalSeconds: < 0 } => false,
 
                 _ => false
