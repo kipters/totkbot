@@ -1,0 +1,22 @@
+name: Build and deploy
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - build-actions
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET SDK 7.0
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Run linter
+        run: dotnet format --verify-no-changes -v diag
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
