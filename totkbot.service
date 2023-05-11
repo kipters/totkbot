@@ -1,0 +1,15 @@
+[Unit]
+Description=TOTK countdown bot
+After=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/opt/totk/TotkBot
+Restart=on-failure
+RestartSec=5s
+
+Environment=DOTNET_ENVIRONMENT=Production BOTCONFIGURATION__TOKEN=
+WorkingDirectory=/opt/totk
+
+[Install]
+WantedBy=multi-user.target
