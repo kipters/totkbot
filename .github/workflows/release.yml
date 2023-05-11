@@ -32,5 +32,22 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: totkbot-${{ matrix.architecture }}
+          name: totkbot-linux-${{ matrix.architecture }}
           path: dist-${{ matrix.architecture }}
+      - name: Deploy
+        uses: Burnett01/rsync-deployments@5.2.1
+        if: ${{ matrix.architecture == 'arm64' }}
+        with:
+          switches: -avzr --delete
+          remote_path: /opt/totk
+          remote_host: ${{ secrets.RSYNC_HOST }}
+          remote_user: ${{ secrets.RSYNC_USER }}
+          remote_key: ${{ secrets.RSYNC_KEY }}
+      - name: Restart unit
+        uses: appleboy/ssh-action@v0.1.10
+        if: ${{ matrix.architecture == 'arm64' }}
+        with:
+          host: ${{ secrets.RSYNC_HOST }}
+          username: ${{ secrets.RSYNC_USER }}
+          key: ${{ secrets.RSYNC_KEY }}
+          script: systemctl restart totkbot
