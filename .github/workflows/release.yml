@@ -21,13 +21,16 @@ jobs:
         run: dotnet restore
       - name: Run linter
         run: dotnet format --verify-no-changes -v diag
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Publish
         run: >-
           dotnet publish
           --configuration Release
           --runtime linux-${{ matrix.architecture }}
           --self-contained
-          -p:SourceRevisionId=${{ github.sha }}
+          -p:SourceRevisionId=${{ steps.vars.outputs.sha_short }}
           --output ./dist-${{ matrix.architecture }}
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -39,6 +42,7 @@ jobs:
         if: ${{ matrix.architecture == 'arm64' }}
         with:
           switches: -avzr --delete
+          path: dist-${{ matrix.architecture }}/*
           remote_path: /opt/totk
           remote_host: ${{ secrets.RSYNC_HOST }}
           remote_user: ${{ secrets.RSYNC_USER }}
