@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -53,9 +54,21 @@ try
             services.AddScoped<IReceiverService, ReceiverService>();
             services.AddHostedService<PollingService>();
             services.AddHostedService<MassUpdateService>();
+
         })
         .Build();
+    host.Services.GetRequiredService<IHostApplicationLifetime>().ApplicationStarted.Register(() =>
+    {
+        var bot = host.Services.GetRequiredService<ITelegramBotClient>();
+        var botConfig = host.Services.GetRequiredService<IOptions<BotConfiguration>>();
+        var me = bot.GetMeAsync().GetAwaiter().GetResult();
+        var version = Assembly
+            .GetExecutingAssembly()?
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
 
+        Log.Information("Bot {BotName} ({BotId}) started with version {Version}", me.Username, me.Id, version);
+    });
     host.Run();
 }
 catch (Exception ex)
