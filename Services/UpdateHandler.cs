@@ -1,4 +1,7 @@
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -17,12 +20,14 @@ public partial class UpdateHandler : IUpdateHandler
     private readonly BotConfiguration _options;
     private readonly IChatRepo _repo;
     private readonly ILocalizationService _loc;
+    private readonly IHostEnvironment _env;
 
     public UpdateHandler(ILogger<UpdateHandler> logger,
         ITelegramBotClient botClient,
         IOptionsSnapshot<BotConfiguration> options,
         IChatRepo repo,
-        ILocalizationService loc)
+        ILocalizationService loc,
+        IHostEnvironment env)
     {
         ArgumentNullException.ThrowIfNull(options);
         _logger = logger;
@@ -30,6 +35,7 @@ public partial class UpdateHandler : IUpdateHandler
         _options = options.Value;
         _repo = repo;
         _loc = loc;
+        _env = env;
     }
     public async Task HandlePollingErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
     {
@@ -101,7 +107,7 @@ public partial class UpdateHandler : IUpdateHandler
         var commandHandler = command switch
         {
             "start" => HandleStartCommand(message, cancellationToken),
-            "stop" => HandleStopCommand(message, cancellationToken),
+            "env" => HandleEnvCommand(message, cancellationToken),
             "countdown" => HandleCountdownCommand(message, cancellationToken),
             "spam" when message.From?.Id == _options.AdminId => DebugMassMessage(cancellationToken),
             _ => ValueTask.CompletedTask
@@ -110,9 +116,28 @@ public partial class UpdateHandler : IUpdateHandler
         await commandHandler;
     }
 
-    private ValueTask HandleStopCommand(Message message, CancellationToken cancellationToken)
+    private async ValueTask HandleEnvCommand(Message message, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        if (message.From?.Id != _options.AdminId)
+        {
+            return;
+        }
+
+        var version = Assembly
+            .GetExecutingAssembly()?
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion;
+
+        var runtime = Environment.Version.ToString() + "+" + RuntimeInformation.RuntimeIdentifier;
+        var os = RuntimeInformation.OSDescription;
+        var env = _env.EnvironmentName;
+
+        var text = $"Version: {version}\nRuntime: {runtime}\nOS: {os}\nEnv: {env}";
+
+        await _bot.SendTextMessageAsync(message.Chat.Id, text,
+            replyToMessageId: message.MessageId,
+            parseMode: ParseMode.MarkdownV2,
+            cancellationToken: cancellationToken);
     }
 
     private async ValueTask DebugMassMessage(CancellationToken cancellationToken)
