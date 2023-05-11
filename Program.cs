@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Serilog;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
@@ -34,6 +35,8 @@ try
                 .ValidateDataAnnotations()
                 .ValidateOnStart()
                 ;
+
+            services.AddFeatureManagement();
 
             services
                 .AddHttpClient("telegram_bot_client")

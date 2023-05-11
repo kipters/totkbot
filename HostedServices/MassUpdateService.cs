@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.FeatureManagement;
 using Telegram.Bot;
 using Telegram.Bot.Types.Enums;
 using TotkBot.ConfigModel;
@@ -15,19 +16,22 @@ public class MassUpdateService : BackgroundService
     private readonly IChatRepo _repo;
     private readonly ILocalizationService _loc;
     private readonly ITelegramBotClient _bot;
+    private readonly IFeatureManager _featureManager;
     private readonly string[] _languages;
 
     public MassUpdateService(ILogger<MassUpdateService> logger,
         IOptionsMonitor<BotConfiguration> options, 
         IChatRepo repo,
         ILocalizationService localization,
-        ITelegramBotClient bot)
+        ITelegramBotClient bot,
+        IFeatureManager featureManager)
     {
         _logger = logger;
         _options = options;
         _repo = repo;
         _loc = localization;
         _bot = bot;
+        _featureManager = featureManager;
         _languages = new[] { "it", "en" };
     }
 
@@ -69,11 +73,14 @@ public class MassUpdateService : BackgroundService
                 l => _loc.GetCountdownMessage(l, delta)
             );
 
+            var silentNotification = await _featureManager.IsEnabledAsync(Features.SilentNotifications);
+            
             foreach (var (chatId, lang) in _repo.EnumerateGroups())
             {
                 var text = messages.TryGetValue(lang, out var txt) ? txt : messages["en"];
                 await _bot.SendTextMessageAsync(chatId, text, 
                     parseMode: ParseMode.MarkdownV2,
+                    disableNotification: silentNotification,
                     cancellationToken: stoppingToken);
             }
         }
