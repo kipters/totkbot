@@ -29,7 +29,9 @@ public class PollingService : BackgroundService
 
                 await receiver.ReceiveAsync(stoppingToken);
             }
+#pragma warning disable CA1031 // Do not catch general exception types
             catch (Exception ex)
+#pragma warning restore CA1031 // Do not catch general exception types
             {
                 _logger.LogError(ex, "Polling failed");
                 // TODO replace with Polly

@@ -15,8 +15,8 @@ public class SqliteChatRepo : IChatRepo
         db.exec("PRAGMA journal_mode=WAL");
         db.exec("""
             CREATE TABLE IF NOT EXISTS Groups (
-                chat_id INTEGER NOT NULL, 
-                lang TEXT NOT NULL, 
+                chat_id INTEGER NOT NULL,
+                lang TEXT NOT NULL,
                 enabled INTEGER NOT NULL DEFAULT 1
             )
         """);

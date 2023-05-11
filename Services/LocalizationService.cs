@@ -4,6 +4,7 @@ using Humanizer.Localisation;
 
 namespace TotkBot.Services;
 
+#pragma warning disable CA1508 // Avoid dead conditional code
 public class LocalizationService : ILocalizationService
 {
     public string GetCountdownMessage(string? language, TimeSpan delta)
@@ -33,7 +34,7 @@ public class LocalizationService : ILocalizationService
             toWords: true)
             .Humanize(LetterCasing.Sentence);
 
-        var text = string.Format(template, humanizedDelta);
+        var text = string.Format(culture, template, humanizedDelta);
         return text;
     }
 

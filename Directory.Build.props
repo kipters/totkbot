@@ -1,0 +1,21 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>11</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>$([System.DateTime]::UtcNow.ToString("yyyy.MM.dd"))</Version>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <!--
+      CA2007: Do not directly await a Task without calling ConfigureAwait
+              We don't have a Synchronization context, this it's not needed
+      CA1848: For improved performance, use the LoggerMessage delegates
+              We don't need this, we have low logging volume
+    -->
+    <NoWarn>$(NoWarn);CA2007;CA1848</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -20,7 +20,7 @@ public class MassUpdateService : BackgroundService
     private readonly string[] _languages;
 
     public MassUpdateService(ILogger<MassUpdateService> logger,
-        IOptionsMonitor<BotConfiguration> options, 
+        IOptionsMonitor<BotConfiguration> options,
         IChatRepo repo,
         ILocalizationService localization,
         ITelegramBotClient bot,
@@ -37,7 +37,7 @@ public class MassUpdateService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
 
         while (await timer.WaitForNextTickAsync(stoppingToken))
         {
@@ -73,12 +73,12 @@ public class MassUpdateService : BackgroundService
                 l => _loc.GetCountdownMessage(l, delta)
             );
 
-            var silentNotification = await _featureManager.IsEnabledAsync(Features.SilentNotifications);
-            
+            var silentNotification = await _featureManager.IsEnabledAsync(FeatureFlags.SilentNotifications);
+
             foreach (var (chatId, lang) in _repo.EnumerateGroups())
             {
                 var text = messages.TryGetValue(lang, out var txt) ? txt : messages["en"];
-                await _bot.SendTextMessageAsync(chatId, text, 
+                await _bot.SendTextMessageAsync(chatId, text,
                     parseMode: ParseMode.MarkdownV2,
                     disableNotification: silentNotification,
                     cancellationToken: stoppingToken);

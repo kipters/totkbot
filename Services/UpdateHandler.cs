@@ -13,7 +13,7 @@ namespace TotkBot.Services;
 public partial class UpdateHandler : IUpdateHandler
 {
     private readonly ILogger<UpdateHandler> _logger;
-    private ITelegramBotClient _bot;
+    private readonly ITelegramBotClient _bot;
     private readonly BotConfiguration _options;
     private readonly IChatRepo _repo;
     private readonly ILocalizationService _loc;
@@ -24,6 +24,7 @@ public partial class UpdateHandler : IUpdateHandler
         IChatRepo repo,
         ILocalizationService loc)
     {
+        ArgumentNullException.ThrowIfNull(options);
         _logger = logger;
         _bot = botClient;
         _options = options.Value;
