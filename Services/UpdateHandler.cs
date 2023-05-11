@@ -136,7 +136,6 @@ public partial class UpdateHandler : IUpdateHandler
 
         await _bot.SendTextMessageAsync(message.Chat.Id, text,
             replyToMessageId: message.MessageId,
-            parseMode: ParseMode.MarkdownV2,
             cancellationToken: cancellationToken);
     }
 
